@@ -30,8 +30,7 @@ int emoji_count(char *utf8str) {
 // - Invert "😊" U+1F60A ("\xF0\x9F\x98\x8A") into a non-simpling face.
 // - Choose at least five more emoji to invert.
 void emoji_invertChar(char *utf8str) {
-  
-  /*
+
   if (utf8str[3] == '\x8A') {
     utf8str[3] = '\x9E';
   } else if (utf8str[3] == '\x81') {
@@ -45,8 +44,8 @@ void emoji_invertChar(char *utf8str) {
   } else if (utf8str[3] == '\x88') {
     utf8str[3] = '\x8E';
   }
-  */
 
+  /*
   char* u = malloc(sizeof(char*));
   u = strncpy(u, utf8str, 5);
   char* a = "\xF0\x9F\x98\x8A";
@@ -54,6 +53,7 @@ void emoji_invertChar(char *utf8str) {
     char* n1 = "\xF0\x9F\x98\x9E";
     strcpy(utf8str, n1);
   }
+  */
 }
 
 
