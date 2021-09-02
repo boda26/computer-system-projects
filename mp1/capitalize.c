@@ -27,12 +27,7 @@ void capitalizeAll(char *s) {
 char *capitalizeAll_alloc(const char *s) {
   char* a = malloc(100);
   strcpy(a, s);
-  int i;
-  for (i = 0; i < strlen(a); i++) {
-    if (a[i] >= 97 && a[i] <= 122) {
-      a[i] = a[i] - 32;
-    }
-  }
+  capitalizeAll(a);
   //printf("%s\n", s);
   //printf("%s\n", a);
   return a;
