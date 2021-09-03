@@ -1,0 +1,16 @@
+name: GitHub Action Autograding
+
+on:
+  push:
+    paths:
+      mp2/*
+
+jobs:
+  build:
+    name: Autograding
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: wadefagen/autograding@v1
+        with:
+          path: mp2/
