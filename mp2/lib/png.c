@@ -24,11 +24,52 @@ const int ERROR_NO_UIUC_CHUNK = 4;
  * with further fuctions in this library.
  */
 PNG * PNG_open(const char *filename, const char *mode) {
-  return NULL;
+  FILE* f = fopen(filename, mode);
+  if (f == NULL) {
+    return NULL;
+  }
+  if (strcmp(mode, "r") == 0 || strcmp(mode, "r+") == 0) {
+    char* sig = malloc(8);
+    fread(sig, 1, 8, f);
+    if (sig[0] != -119 || sig[1] != 80 || sig[2] != 78 || sig[3] != 71 || sig[4] != 13 || sig[5] != 10 || sig[6] != 26 || sig[7] != 10) {
+      free(sig);
+      return NULL;
+    } else {
+      PNG* p = malloc(sizeof(PNG*));
+      p->ff = f;
+      p->pos = 8;
+      p->isEnd = 0;
+      free(sig);
+      return p;
+    }
+  } else if (strcmp(mode, "w") == 0) {
+    char* sig = malloc(8);
+    sig[0] = -119;  //137
+    sig[1] = 80;
+    sig[2] = 78;
+    sig[3] = 71;
+    sig[4] = 13;
+    sig[5] = 10;
+    sig[6] = 26;
+    sig[7] = 10;
+    fwrite(sig, 1, 8, f);
+    
+    char* sss = malloc(8);
+    fread(sss, 1, 8, f);
+    //printf("%s\n", sss);
+    PNG* p = malloc(sizeof(PNG*));
+    p->ff = f;
+    p->pos = 8;
+    p->isEnd = 0;
+    free(sig);
+    return p;
+  } else {
+    return NULL;
+  }
 }
 
 
-/**
+/*
  * Reads the next PNG chunk from `png`.
  * 
  * If a chunk exists, a the data in the chunk is populated in `chunk` and the
@@ -39,7 +80,26 @@ PNG * PNG_open(const char *filename, const char *mode) {
  * Users of the library must call `PNG_free_chunk` on all returned chunks.
  */
 size_t PNG_read(PNG *png, PNG_Chunk *chunk) {
-  return 0;
+  if (png->ff == NULL) {
+    return 0;
+  }
+  if (png->isEnd == 1) {
+    return 0;
+  }
+  fseek(png->ff, png->pos, SEEK_SET);
+  fread(&chunk->len, 1, 4, png->ff);
+  chunk->len = swap32(chunk->len);
+  fread(chunk->type, 1, 4, png->ff);
+  chunk->type[4]='\x0';
+  if (chunk->type[0] == 73 && chunk->type[1] == 69 && chunk->type[2] == 78 && chunk->type[3] == 68) {
+    png->isEnd = 1;
+  }
+  chunk->data = malloc(chunk->len);
+  fread(chunk->data, 1, chunk->len, png->ff);
+  fread(&chunk->crc, 1, 4, png->ff);
+  chunk->crc = swap32(chunk->crc);
+  png->pos = ftell(png->ff);
+  return chunk->len + 12;
 }
 
 
@@ -50,7 +110,42 @@ size_t PNG_read(PNG *png, PNG_Chunk *chunk) {
  * based on the other data in the `chunk`; do not assume the CRC given has been calculated for you.
  */
 size_t PNG_write(PNG *png, PNG_Chunk *chunk) {
-  return 0;
+  if (png->ff == NULL) {
+    return 0;
+  }
+  fseek(png->ff, png->pos, SEEK_SET);
+  uint32_t l1 = swap32(chunk->len);
+  fwrite(&l1, 1, 4, png->ff);
+  chunk->type[4] = '\x0';
+  fwrite(&chunk->type, 1, 4, png->ff);
+  fwrite(chunk->data, 1, chunk->len, png->ff);
+
+  char* buffer = malloc(chunk->len + 4);
+  strcpy(buffer, chunk->type);
+  strcat(buffer, chunk->data);
+  //printf("%s\n", buffer);
+  uint32_t crc = 0;
+  crc32(buffer, chunk->len + 4, &crc);
+  //printf("%d\n", crc);
+  crc = swap32(crc);
+  //printf("%d\n", crc);
+  fwrite(&crc, 1, 4, png->ff);
+
+  /*
+  fseek(png->ff, 8, SEEK_SET);
+  fread(&chunk->len, 1, 4, png->ff);
+  chunk->len = swap32(chunk->len);
+  //printf("%d\n", chunk->len);
+  fread(chunk->type, 1, 4, png->ff);
+  //printf("%s\n", chunk->type);
+  chunk->data = malloc(chunk->len);
+  fread(chunk->data, 1, chunk->len, png->ff);
+  fread(&chunk->crc, 1, 4, png->ff);
+  */
+  //printf("%d\n", chunk->crc);
+  free(buffer);
+  png->pos = ftell(png->ff);
+  return chunk->len + 12;
 }
 
 
@@ -58,7 +153,7 @@ size_t PNG_write(PNG *png, PNG_Chunk *chunk) {
  * Frees all memory allocated by this library related to `chunk`.
  */
 void PNG_free_chunk(PNG_Chunk *chunk) {
-
+  free(chunk->data);
 }
 
 
@@ -66,5 +161,14 @@ void PNG_free_chunk(PNG_Chunk *chunk) {
  * Closes the PNG file and frees all memory related to `png`.
  */
 void PNG_close(PNG *png) {
+  fclose(png->ff);
+}
 
+uint32_t swap32(uint32_t k)
+{
+  return ((k << 24) |
+    ((k & 0x0000FF00) << 8) |
+    ((k & 0x00FF0000) >> 8) |
+    (k >> 24)
+  );
 }

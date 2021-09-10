@@ -8,6 +8,9 @@ extern "C" {
 // PNG
 struct _PNG {
   // Add any elements you need to store the PNG here:
+  FILE* ff;
+  long int pos;
+  int isEnd;
 };
 typedef struct _PNG PNG;
 
@@ -32,6 +35,7 @@ size_t PNG_read(PNG *png, PNG_Chunk *chunk);
 size_t PNG_write(PNG *png, PNG_Chunk *chunk);
 void PNG_free_chunk(PNG_Chunk *chunk);
 void PNG_close(PNG *png);
+uint32_t swap32(uint32_t k);
 
 // Exit Codes
 extern const int ERROR_INVALID_PARAMS;
