@@ -3,13 +3,14 @@
 #include "lib/png.h"
 #include <string.h>
 #include "lib/crc32.h"
+#include <stdbool.h>
 
 int png_hideGIF(const char *png_filename, const char *gif_filename) {
   PNG *png = PNG_open(png_filename, "r+");
   if (!png) { return ERROR_INVALID_FILE; }
 
   printf("PNG Header written.\n");
-  int written = 0;
+  bool written = false;
 
   // Read chunks until reaching "IEND" or in invalid chunk:
   while (1) {
@@ -20,7 +21,7 @@ int png_hideGIF(const char *png_filename, const char *gif_filename) {
       return ERROR_INVALID_CHUNK_DATA;
     }
 
-    if (written == 1) {
+    if (written == true) {
       int pos = ftell(png->ff);
       fseek(png->ff, 0, SEEK_END);
       int end = ftell(png->ff);
@@ -53,15 +54,17 @@ int png_hideGIF(const char *png_filename, const char *gif_filename) {
       free(store);
       free(gifchunk.data);
       fclose(g);
-      written = 0;
+      written = false;
       png->pos += length + 12;
+      PNG_close(png);
+      return 0;
     }
     // Report data about the chunk to the command line:
     //bytesWritten = PNG_write(out, &chunk);
     //printf("PNG chunk %s written (%lu bytes)\n", chunk.type, bytesWritten);
 
     if (strcmp(chunk.type, "IHDR") == 0) {
-      written = 1;
+      written = true;
     }
     // Check for the "IEND" chunk to exit:
     if ( strcmp(chunk.type, "IEND") == 0 ) {
