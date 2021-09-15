@@ -232,17 +232,9 @@ void *realloc(void *ptr, size_t size) {
 		buffer += size;
 		if (ptr && size) { memcpy(newPtr, ptr, size); }
 		return newPtr;
-  }
+	}
 
-	void *addr;
-	if (!ptr) {
-		addr = alloc_malloc(size);
-  } else if (size == 0) {	
-		alloc_free(ptr);
-		ptr = NULL;
-	} else {
-		addr = alloc_realloc(ptr, size);
-  }
+	void *addr = alloc_realloc(ptr, size);
 	stats_tracking();
 
 	return addr;

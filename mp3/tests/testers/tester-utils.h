@@ -1,7 +1,3 @@
-/**
- * Malloc
- * CS 240 - Fall 2020
- */
 #pragma once
 #include <stdio.h>
 #include <stdlib.h>
