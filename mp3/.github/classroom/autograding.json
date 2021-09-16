@@ -51,9 +51,9 @@
       "points": 2
     },
     {
-      "name": "sample1, Block Splitting",
+      "name": "sample1 - Block Splitting",
       "setup": "make test",
-      "run": "./test 'sample1, Block Splitting'",
+      "run": "./test 'sample1 - Block Splitting'",
       "input": "",
       "output": "",
       "comparison": "included",
