@@ -94,7 +94,7 @@ void *calloc(size_t num, size_t size) {
 
 void *malloc(size_t size) {
   // implement malloc
-  print_heap(size);
+  //print_heap(size);
   
   if (startOfHeap == NULL) {
     startOfHeap = sbrk(0);
