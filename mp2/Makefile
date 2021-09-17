@@ -1,6 +1,6 @@
 # Select version of g++
-ifneq (, $(shell which g++-9))
-CXX = g++-9
+ifneq (, $(shell which g++-11))
+CXX = g++-11
 else
 ifneq (, $(shell which g++))
 CXX = g++
