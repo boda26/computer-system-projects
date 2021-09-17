@@ -11,11 +11,11 @@ void *startOfHeap = NULL;
 typedef struct _metadata_t {
   unsigned int size;     // The size of the memory block.
   unsigned char isUsed;  // 0 if the block is free; 1 if the block is used.
-  void* prevFree;
-  void* nextFree;
+  //void* prevFree;
+  //void* nextFree;
 } metadata_t;
 
-void* head = NULL;
+void* freeHead = NULL;
 
 void print_heap(size_t size) {
   printf("Inside: malloc(%lu):\n", size);
@@ -33,39 +33,6 @@ void print_heap(size_t size) {
     curMeta = (void *)curMeta + curMeta->size + sizeof(metadata_t);
   }
   printf("-- End of Heap (%p) --\n\n", endOfHeap);
-}
-
-void add_to_free(void* ptr) {
-  metadata_t* meta = (metadata_t*)ptr;
-  if (head == NULL) {
-    head = meta;
-    meta->nextFree = NULL;
-    return;
-  }
-  metadata_t* cur = (metadata_t*)head;
-  while (cur->nextFree != NULL) {
-    cur = cur->nextFree;
-  }
-  cur->nextFree = meta;
-  meta->nextFree = NULL;
-  printf("%d\n", 111);
-}
-
-void remove_from_free(void* ptr) {
-  metadata_t* meta = (metadata_t*)ptr;
-  metadata_t* prev = meta->prevFree;
-  metadata_t* next = meta->nextFree;
-  meta->prevFree = NULL;
-  meta->nextFree = NULL;
-  if (prev != NULL) {
-    prev->nextFree = next;
-  }
-  if (next != NULL) {
-    next->prevFree = prev;
-  }
-  if (ptr == head) {
-    head = next;
-  }
 }
 
 
