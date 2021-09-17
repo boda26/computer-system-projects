@@ -174,9 +174,7 @@ void free(void *ptr) {
   while ((void *)nextMeta < endOfHeap) {   // While we're before the end of the heap...
     if (curMeta->isUsed == 0 && nextMeta->isUsed == 0) {
       size_t totalsize = curMeta->size + nextMeta->size + 2 * sizeof(metadata_t);
-      curMeta->size = curMeta->size + nextMeta->size;
-      nextMeta->size = 0;
-      nextMeta->isUsed = -1;
+      curMeta->size = curMeta->size + nextMeta->size + sizeof(metadata_t);
       nextMeta = (void *)curMeta + totalsize;
     } else {
       metadata_t* temp = nextMeta;
