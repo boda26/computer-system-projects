@@ -65,8 +65,8 @@ void *calloc(size_t num, size_t size) {
     if (!ptr) {
       return NULL;
     }
+    memset(ptr, 0 , num*size);
     return ptr;
-    
 }
 
 
