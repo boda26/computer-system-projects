@@ -10,8 +10,6 @@ jobs:
         test_suite: autograding
   extra_credit:
     name: week2
-    needs:
-    - autograding
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
