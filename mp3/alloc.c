@@ -11,11 +11,14 @@ void *startOfHeap = NULL;
 typedef struct _metadata_t {
   unsigned int size;     // The size of the memory block.
   unsigned char isUsed;  // 0 if the block is free; 1 if the block is used.
-  //void* prevFree;
-  //void* nextFree;
+  void* prev_free;
+  void* next_free;
+  void* prev_mem;
+  void* next_mem;
 } metadata_t;
 
-void* freeHead = NULL;
+void* free_head = NULL;
+void* mem_tail = NULL;
 
 void print_heap(size_t size) {
   printf("Inside: malloc(%lu):\n", size);
@@ -33,6 +36,46 @@ void print_heap(size_t size) {
     curMeta = (void *)curMeta + curMeta->size + sizeof(metadata_t);
   }
   printf("-- End of Heap (%p) --\n\n", endOfHeap);
+}
+
+void insert_block_into_free_list(void *block) {
+  metadata_t *meta      = (metadata_t *) block;
+  metadata_t *cur = (metadata_t *) free_head;
+
+  if (free_head == NULL) {
+    free_head = (void*)meta;
+    return;
+  }
+
+  while (cur->next_free) {
+    cur = cur->next_free;
+  }
+  cur->next_free = meta;
+  meta->prev_free = cur;
+  meta->next_free = NULL;
+}
+
+void remove_block_from_free_list(void *block) {
+  metadata_t *meta = (metadata_t *) block;
+
+  metadata_t *prev_meta = (metadata_t *) meta->prev_free;
+  metadata_t *next_meta = (metadata_t *) meta->next_free;
+  meta->prev_free = NULL;
+  meta->next_free = NULL;
+
+  // REMOVE BLOCK FROM LIST
+  if (prev_meta != NULL) {
+    prev_meta->next_free = next_meta;
+  }
+
+  if (next_meta != NULL) {
+    next_meta->prev_free = prev_meta;
+  }
+
+  // CHANGE HEAD IF NEEDED
+  if (block == free_head) {
+    free_head = (void*)next_meta;
+  }
 }
 
 
@@ -95,47 +138,76 @@ void *calloc(size_t num, size_t size) {
 void *malloc(size_t size) {
   // implement malloc
   //print_heap(size);
-  
-  if (startOfHeap == NULL) {
-    startOfHeap = sbrk(0);
-    // sbrk(0) returns the current end of our heap, without increasing it.
-  }
-  metadata_t *curMeta = startOfHeap;
-  void *endOfHeap = sbrk(0);
-  while ((void *)curMeta < endOfHeap) {
-    if (curMeta->isUsed == 0 && curMeta->size == size) {
-      curMeta->isUsed == 1;
-      void* ptr = (void *)curMeta + sizeof(metadata_t);
+
+  metadata_t* cur = (metadata_t*)free_head;
+  while (cur) {
+    if (cur->size == size) {
+      cur->isUsed = 1;
+      void* ptr = (void*)cur + sizeof(metadata_t);
+      remove_block_from_free_list((void*)cur);
       return ptr;
-    } else if (curMeta->isUsed == 0 && curMeta->size > size) {
-      size_t oldsize = curMeta->size;
-      curMeta->isUsed = 1;
-      curMeta->size = size;
-      void* curptr = (void *)curMeta + sizeof(metadata_t);
-      metadata_t* nextMeta = (void *)curptr + size;
-      nextMeta->isUsed = 0;
-      nextMeta->size = oldsize - sizeof(metadata_t) - size;
+    } else if (cur->size > size) {
+      metadata_t* next_block = cur->next_mem;
+      size_t oldsize = cur->size;
+      cur->isUsed = 1;
+      cur->size = size;
+
+      metadata_t* curPrev = cur->prev_free;
+      metadata_t* curNext = cur->next_free;
+      remove_block_from_free_list(cur);
+
+      void* curptr = (void *)cur + sizeof(metadata_t);
+      metadata_t* newBlock = (void *)curptr + size;
+      newBlock->isUsed = 0;
+      newBlock->size = oldsize - sizeof(metadata_t) - size;
+      newBlock->next_mem = next_block;
+      if (next_block) {
+        next_block->prev_mem = newBlock;
+      }
+      cur->next_mem = newBlock;
+      newBlock->prev_mem = cur;
+      
+      //insert new block into free list
+      newBlock->prev_free = curPrev;
+      newBlock->next_free = curNext;
+      if (curPrev) {
+        curPrev->next_free = newBlock;
+      }
+      if (curNext) {
+        curNext->prev_free = newBlock;
+      }
+      if (!newBlock->prev_free) {
+        free_head = (void*)newBlock;
+      }
+
       return curptr;
     } else {
       //do nothing
     }
-    curMeta = (void *)curMeta + curMeta->size + sizeof(metadata_t);
+    cur = cur->next_free;
   }
 
+  //malloc new block
   metadata_t *meta = sbrk( sizeof(metadata_t) );
   if (!meta) {
     return NULL;
   }
   meta->size = size;
   meta->isUsed = 1;
-
-  // Allocate heap memory for the requested memory:
   void *ptr = sbrk( size );
-
   if (!ptr) {
     return NULL;
   }
+  meta->next_mem = NULL;
+  meta->prev_mem = mem_tail;
+  meta->next_free = NULL;
+  meta->prev_free = NULL;
 
+  if (mem_tail) {
+    metadata_t* tail = (metadata_t*)mem_tail;
+    tail->next_mem = meta;
+  }
+  mem_tail = (void*)meta;
   // Return the pointer for the requested memory:
   return ptr;
 }
@@ -158,30 +230,72 @@ void *malloc(size_t size) {
  *    passed as argument, no action occurs.
  */
 void free(void *ptr) {
-  // implement free
-  metadata_t *meta = ptr - sizeof( metadata_t );
-  meta->isUsed = 0;
+  if (!ptr) {
+    return;
+  }
+  metadata_t* meta = ptr - sizeof(metadata_t);
+  metadata_t* nextMeta = meta->next_mem;
+  metadata_t* prevMeta = meta->prev_mem;
 
-  //traverse
-  if (startOfHeap == NULL) {
-    startOfHeap = sbrk(0);
-    // sbrk(0) returns the current end of our heap, without increasing it.
-  }
-  // Print out data about each metadata chunk:
-  metadata_t *curMeta = startOfHeap;
-  void *endOfHeap = sbrk(0);
-  metadata_t* nextMeta = (void *)curMeta + curMeta->size + sizeof(metadata_t);
-  while ((void *)nextMeta < endOfHeap) {   // While we're before the end of the heap...
-    if (curMeta->isUsed == 0 && nextMeta->isUsed == 0) {
-      size_t totalsize = curMeta->size + nextMeta->size + 2 * sizeof(metadata_t);
-      curMeta->size = curMeta->size + nextMeta->size + sizeof(metadata_t);
-      nextMeta = (void *)curMeta + totalsize;
-    } else {
-      metadata_t* temp = nextMeta;
-      nextMeta = (void *)nextMeta + nextMeta->size + sizeof(metadata_t);
-      curMeta = temp;
+  int prev_cont = (prevMeta) && ((void*)prevMeta + sizeof(metadata_t) + prevMeta->size == meta);
+  int next_cont = (nextMeta) && ((void*)meta + sizeof(metadata_t) + meta->size == nextMeta);
+
+  //merge two sides case
+  if (prevMeta && nextMeta && prevMeta->isUsed == 0 && nextMeta->isUsed == 0 && prev_cont && next_cont) {
+    remove_block_from_free_list((void*)nextMeta);
+    metadata_t* next_next = nextMeta->next_mem;
+    if (next_next) {
+      next_next->prev_mem = prevMeta;
     }
+    prevMeta->next_mem = next_next;
+
+    if ((void*)nextMeta == mem_tail) {
+      mem_tail = (void*)prevMeta;
+    }
+
+    prevMeta->size += meta->size + nextMeta->size + 2 * sizeof(metadata_t);
+    return;
   }
+
+  if (prevMeta && prevMeta->isUsed == 0 && prev_cont) {
+    if (nextMeta) {
+      nextMeta->prev_mem = prevMeta;
+    }
+    prevMeta->next_mem = nextMeta;
+    if (mem_tail == (void*)meta) {
+      mem_tail = (void*)prevMeta;
+    }
+    prevMeta->size += meta->size + sizeof(metadata_t);
+    remove_block_from_free_list(meta);
+    return;
+  }
+
+  if (nextMeta && nextMeta->isUsed == 0 && next_cont) {
+    metadata_t* nextMeta_prev = nextMeta->prev_free;
+    metadata_t* nextMeta_next = nextMeta->next_free;
+    remove_block_from_free_list((void*)nextMeta);
+    metadata_t* next_next = nextMeta->next_mem;
+    if (next_next) {
+      next_next->prev_mem = meta;
+    }
+    meta->next_mem = next_next;
+    meta->size += nextMeta->size + sizeof(metadata_t);
+    meta->isUsed = 0;
+    meta->prev_free = nextMeta_prev;
+    meta->next_free = nextMeta_next;
+    if (nextMeta_prev) {
+      nextMeta_prev->next_free = meta;
+    }
+    if (nextMeta_next) {
+      nextMeta_next->prev_free = meta;
+    }
+    if (!meta->prev_free) {
+      free_head = (void*)meta;
+    }
+    return;
+  }
+  meta->isUsed = 0;
+  insert_block_into_free_list(meta);
 }
 
 
