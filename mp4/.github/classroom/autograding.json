@@ -1,0 +1,74 @@
+{
+  "tests": [
+    {
+      "name": "Test Initial Get Resource",
+      "setup": "make test",
+      "run": "./test 'Test Initial Get Resource'",
+      "input": "",
+      "output": "",
+      "comparison": "included",
+      "timeout": 5,
+      "points": 5
+    },
+    {
+      "name": "Test Initial Negative Delta",
+      "setup": "make test",
+      "run": "./test 'Test Initial Negative Delta'",
+      "input": "",
+      "output": "",
+      "comparison": "included",
+      "timeout": 5,
+      "points": 5
+    },
+    {
+      "name": "Test Multiple Wallets",
+      "setup": "make test",
+      "run": "./test 'Test Multiple Wallets'",
+      "input": "",
+      "output": "",
+      "comparison": "included",
+      "timeout": 5,
+      "points": 10
+    },
+    {
+      "name": "Test Large Adds and Subtracts",
+      "setup": "make test",
+      "run": "./test 'Test Large Adds and Subtracts'",
+      "input": "",
+      "output": "",
+      "comparison": "included",
+      "timeout": 5,
+      "points": 5
+    },
+    {
+      "name": "Test HedgeHog Food and HedgeHogs",
+      "setup": "make test",
+      "run": "./test 'Test HedgeHog Food and HedgeHogs'",
+      "input": "",
+      "output": "",
+      "comparison": "included",
+      "timeout": 5,
+      "points": 5
+    },
+    {
+      "name": "Test HedgeHog Food and HedgeHogs - Mutex",
+      "setup": "make test",
+      "run": "./test 'Test HedgeHog Food and HedgeHogs - Mutex'",
+      "input": "",
+      "output": "",
+      "comparison": "included",
+      "timeout": 5,
+      "points": 10
+    },
+    {
+      "name": "Test Degree Program - Successfully Completes",
+      "setup": "make test",
+      "run": "./test 'Test Degree Program - Successfully Completes'",
+      "input": "",
+      "output": "",
+      "comparison": "included",
+      "timeout": 5,
+      "points": 10
+    }
+  ]
+}
