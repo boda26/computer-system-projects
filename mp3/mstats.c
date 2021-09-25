@@ -198,14 +198,14 @@ int main(int argc, char **argv, char **envp) {
 			if(stats->memory_uses == 0)
 				fputs("0\n", result_file);
 			else {
-				char avg_heap_used[16];
-				sprintf(avg_heap_used,"%f\n",stats->memory_heap_sum/(double)stats->memory_uses);
+				char avg_heap_used[32];
+				sprintf(avg_heap_used,"%.6f\n",stats->memory_heap_sum/(double)stats->memory_uses);
 				fputs(avg_heap_used, result_file);
 			}
 			
 			// Save time taken to execute
-			char total_time_used[16];
-			sprintf(total_time_used,"%f\n",total_time);
+			char total_time_used[32];
+			sprintf(total_time_used,"%.6f\n",total_time);
 			fputs(total_time_used, result_file);
 			
 			fclose(result_file);
