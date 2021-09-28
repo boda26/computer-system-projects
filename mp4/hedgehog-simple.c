@@ -20,8 +20,11 @@ void *test_add_hedgehog_food(void *wallet) {
 void *test_add_hedgehogs(void *wallet) {
   wallet = (wallet_t *) wallet;
   for (int i = 0; i < 100; i++) {
+    //printf("%d\n", 123);
     wallet_change_resource(wallet, "hedgehog-food", -3);
+    //printf("%d\n", 456);
     wallet_change_resource(wallet, "hedgehogs", 1);
+    //printf("%d\n", 789);
     fprintf(stderr, "🦔");
   }
   return NULL;

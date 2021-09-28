@@ -14,6 +14,7 @@ typedef struct wallet_resource_ {
 typedef struct wallet_t_ {
   pthread_mutex_t lock;
   wallet_resource *head;
+  pthread_cond_t cond;
 } wallet_t;
 
 void wallet_init(wallet_t *wallet);
