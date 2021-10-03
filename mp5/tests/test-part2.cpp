@@ -97,7 +97,7 @@ TEST_CASE("httprequest_read - ASCII Payload Data", "[weight=2][part=2]") {
 
 TEST_CASE("httprequest_read - Payload Binary Payload", "[weight=2][part=2]") {
   HTTPRequest *req = _readpipe_vptr(
-    "GET / HTTP/1.1\r\nHello: World\r\nHost: 127.0.0.1\r\nContent-Length: 10\r\n\r\n0123456789-\x00-0123456789",
+    "GET / HTTP/1.1\r\nHello: World\r\nHost: 127.0.0.1\r\nContent-Length: 23\r\n\r\n0123456789-\x00-0123456789",
     92
   );
 
