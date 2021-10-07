@@ -6,6 +6,11 @@
 extern "C" {
 #endif
 
+typedef struct Pair {
+  const char* key;
+  const char* value;
+  struct Pair* next;
+} Pair;
 
 struct _HTTPRequest {
   const char *action;
@@ -13,6 +18,9 @@ struct _HTTPRequest {
   const char *version;
   const void *payload;
 
+  //
+  Pair* head;
+  char* buffer_array[20];
   // You may want to add more to this struct (ex: to hold the headers).
   // ...however, you MUST keep the `action`, `path`, `version`, and `payload` members
   //    so our test cases can inspect the contents of them without making you write
