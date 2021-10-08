@@ -17,6 +17,7 @@
  * Populate a `req` with the contents of `buffer`, returning the number of bytes used from `buf`.
  */
 ssize_t httprequest_parse_headers(HTTPRequest *req, char *buffer, ssize_t buffer_len) {
+  printf("%d\n", 111);
   ssize_t ret = 0;
   req->action = malloc(sizeof(char));
   req->path = malloc(sizeof(char));
@@ -42,6 +43,7 @@ ssize_t httprequest_parse_headers(HTTPRequest *req, char *buffer, ssize_t buffer
     ret += strlen(delim1);
   }
   free(copy1);
+  printf("%d\n", 222);
 
   //parse the header
   char* saveptr3;
@@ -63,6 +65,7 @@ ssize_t httprequest_parse_headers(HTTPRequest *req, char *buffer, ssize_t buffer
     headcount++;
   }
   free(header);
+  printf("%d\n", 333);
 
   int j;
   char* split_colonsp;
@@ -122,7 +125,7 @@ ssize_t httprequest_parse_headers(HTTPRequest *req, char *buffer, ssize_t buffer
     }
   }
   //req->keyslength = index;
-
+  printf("%d\n", 444);
   return ret;
 }
 
