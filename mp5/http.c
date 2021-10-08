@@ -7,7 +7,6 @@
 #include <sys/ioctl.h>
 #include <sys/socket.h>
 
-
 #include "http.h"
 
 
@@ -17,116 +16,75 @@
  * Populate a `req` with the contents of `buffer`, returning the number of bytes used from `buf`.
  */
 ssize_t httprequest_parse_headers(HTTPRequest *req, char *buffer, ssize_t buffer_len) {
-  printf("%d\n", 111);
-  ssize_t ret = 0;
-  req->action = malloc(20);
-  req->path = malloc(20);
-  req->version = malloc(20);
-
-  char* split_line;
-  char* saveptr1, saveptr2;
-  char* copy1 = malloc(buffer_len + 1);
-  char* copy2;
+  char *copy1 = malloc(strlen(buffer) + 1);
   strcpy(copy1, buffer);
-
-  char* delim1 = "\r\n";
-  char* delim2 = ": ";
-  
-  int count_lines = 0;
-  split_line = strtok_r(copy1, delim1, &saveptr1);
-  while (split_line != NULL) {
-    ret += strlen(split_line);
-    req->buffer_array[count_lines] = malloc(strlen(split_line) + 1);
-    strcpy(req->buffer_array[count_lines], split_line);
-    split_line = strtok_r(NULL, delim1, &saveptr1);
-    count_lines++;
-    ret += strlen(delim1);
-  }
-  free(copy1);
-  printf("%d\n", 222);
-
-  //parse the header
-  char* saveptr3;
-  char* header = malloc(strlen(req->buffer_array[0]) + 1);
-  memcpy(header, req->buffer_array[0], strlen(req->buffer_array[0]));
-  //printf("%s\n", header);
-  char* split_header = strtok_r(header, " ", &saveptr3);
-  int headcount = 0;
-  while (split_header != NULL) {
-    //printf("%s\n", split_header);
-    if (headcount == 0) {
-      strcpy(req->action, split_header);
-    } else if (headcount == 1) {
-      strcpy(req->path, split_header);
-    } else if (headcount == 2) {
-      strcpy(req->version, split_header);
-    }
-    split_header = strtok_r(NULL, " ", &saveptr3);
-    headcount++;
-  }
-  free(header);
-  printf("%d\n", 333);
-
-  int j;
-  char* split_colonsp;
+  char *saveptr1;
+  char *saveptr2;
+  char *saveptr3;
+  char *split_line = strtok_r(copy1, "\r\n", &saveptr1);
+  char *split_space;
+  char *split_colon;
+  char *copy2;
+  char *copy3;
+  int i = 0;
+  int count_header = 0;
   int keyOrValue = 0;
-  int index = 0;
-  req->head = NULL;
-  
-  for (j = 0; j < count_lines; j++) {
-    if (strstr(req->buffer_array[j], delim2)) {   //find a line with delim
-      //printf("%s\n", req->buffer_array[j]);
-      char* temp1 = malloc(strlen(req->buffer_array[j]) + 1);
-      strcpy(temp1, req->buffer_array[j]);
-      split_colonsp = strtok_r(temp1, delim2, &saveptr2);
-      keyOrValue = 0;
-
-      Pair* cur = malloc(sizeof(Pair));
-
-      while (split_colonsp != NULL) {
-        //printf("%s\n", split_colonsp);
-
-        if (keyOrValue == 0) {
-          //req->keys[index] = malloc(strlen(split_colonsp) + 1);
-          //memcpy(req->keys[index], split_colonsp, strlen(split_colonsp) + 1);
-          //printf("%s\n", req->keys[index]);
-
-          cur->key = malloc(strlen(split_colonsp) + 1);
-          strcpy(cur->key, split_colonsp);
-          //printf("%s\n", cur->key);
-
-        } else if (keyOrValue == 1) {
-          //req->values[index] = malloc(strlen(split_colonsp) + 1);
-          //memcpy(req->values[index], split_colonsp, strlen(split_colonsp) + 1);
-          //printf("%s\n", req->values[index]);
-
-          cur->value = malloc(strlen(split_colonsp) + 1);
-          strcpy(cur->value, split_colonsp);
-          break;
-          //printf("%s\n", cur->value);
+  Pair* cur = NULL;
+  while (split_line) {
+    //printf("%s\n", split_line);
+    if (i == 0) {   //populate the header
+      copy2 = malloc(strlen(split_line) + 1);
+      strcpy(copy2, split_line);
+      split_space = strtok_r(copy2, " ", &saveptr2);
+      count_header = 0;
+      while (split_space != NULL) {
+        if (count_header == 0) {
+          req->action = malloc(strlen(split_space) + 1);
+          strcpy(req->action, split_space);
+        } else if (count_header == 1) {
+          req->path = malloc(strlen(split_space) + 1);
+          strcpy(req->path, split_space);
+        } else if (count_header == 2) {
+          req->version = malloc(strlen(split_space) + 1);
+          strcpy(req->version, split_space);
+        } else {
         }
+        split_space = strtok_r(NULL, " ", &saveptr2);
+        count_header++;
+      }
+    }
 
-        split_colonsp = strtok_r(NULL, delim2, &saveptr2);
+    if (strstr(split_line, ": ")) {
+      copy3 = malloc(strlen(split_line) + 1);
+      strcpy(copy3, split_line);
+      split_colon = strtok_r(copy3, ": ", &saveptr3);
+      keyOrValue = 0;
+      cur = malloc(sizeof(Pair*));
+      while (split_colon != NULL) {
+        if (keyOrValue == 0) {
+          cur->key = malloc(strlen(split_colon) + 1);
+          strcpy(cur->key, split_colon);
+        } else if (keyOrValue == 1) {
+          cur->value = malloc(strlen(split_colon) + 1);
+          strcpy(cur->value, split_colon);
+          break;
+        }
         keyOrValue++;
+        split_colon = strtok_r(NULL, ": ", &saveptr3);
       }
       cur->next = NULL;
-      //printf("%s\n", cur->key);
-      //printf("%s\n", cur->value);
-
       if (req->head) {
         cur->next = req->head;
         req->head = cur;
       } else {
         req->head = cur;
       }
-
-      //free(temp1);
-      index++;
     }
+
+    split_line = strtok_r(NULL, "\r\n", &saveptr1);
+    i++;
   }
-  //req->keyslength = index;
-  printf("%d\n", 444);
-  return ret;
+  return 1;
 }
 
 
@@ -185,6 +143,7 @@ const char *httprequest_get_header(HTTPRequest *req, const char *key) {
   Pair* cur = req->head;
   while (cur != NULL) {
     if (strcmp(cur->key, key) == 0) {
+      //printf("%s\n", cur->value);
       return cur->value;
     }
     cur = cur->next;
