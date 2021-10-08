@@ -1,0 +1,10 @@
+degree
+hedgehog-simple
+test
+*.o
+*.so
+
+*.DS_Store
+*.vs_code
+
+*.dSYM/*

@@ -1,54 +1,54 @@
 {
   "tests": [
     {
-      "name": "Test Tester1",
+      "name": "tester1",
       "setup": "make test",
-      "run": "./test 'Test Tester1'",
+      "run": "./test 'tester1'",
       "input": "",
       "output": "",
       "comparison": "included",
-      "timeout": 5,
-      "points": 1
+      "timeout": 30,
+      "points": 10
     },
     {
-      "name": "Test Tester2",
+      "name": "tester2",
       "setup": "make test",
-      "run": "./test 'Test Tester2'",
+      "run": "./test 'tester2'",
       "input": "",
       "output": "",
       "comparison": "included",
-      "timeout": 5,
-      "points": 1
+      "timeout": 30,
+      "points": 10
     },
     {
-      "name": "Test Tester3",
+      "name": "tester3",
       "setup": "make test",
-      "run": "./test 'Test Tester3'",
+      "run": "./test 'tester3'",
       "input": "",
       "output": "",
       "comparison": "included",
-      "timeout": 5,
-      "points": 1
+      "timeout": 30,
+      "points": 10
     },
     {
-      "name": "Test Tester4",
+      "name": "tester4",
       "setup": "make test",
-      "run": "./test 'Test Tester4'",
+      "run": "./test 'tester4'",
       "input": "",
       "output": "",
       "comparison": "included",
-      "timeout": 5,
-      "points": 1
+      "timeout": 30,
+      "points": 10
     },
     {
-      "name": "Test Tester5",
+      "name": "tester5",
       "setup": "make test",
-      "run": "./test 'Test Tester5'",
+      "run": "./test 'tester5'",
       "input": "",
       "output": "",
       "comparison": "included",
-      "timeout": 5,
-      "points": 1
+      "timeout": 30,
+      "points": 10
     }
   ]
 }

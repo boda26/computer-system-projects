@@ -1,7 +1,3 @@
-/**
- * Malloc
- * CS 240 - Fall 2020
- */
 #include "tester-utils.h"
 
 #define TOTAL_ALLOCS 6000

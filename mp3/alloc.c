@@ -6,11 +6,35 @@
 #include <string.h>
 #include <unistd.h>
 
+void *startOfHeap = NULL;
 
 typedef struct _metadata_t {
   unsigned int size;     // The size of the memory block.
   unsigned char isUsed;  // 0 if the block is free; 1 if the block is used.
+  //void* prevFree;
+  //void* nextFree;
 } metadata_t;
+
+void* freeHead = NULL;
+
+void print_heap(size_t size) {
+  printf("Inside: malloc(%lu):\n", size);
+  // If we have not recorded the start of the heap, record it:
+  if (startOfHeap == NULL) {
+    startOfHeap = sbrk(0);
+    // sbrk(0) returns the current end of our heap, without increasing it.
+  }
+  // Print out data about each metadata chunk:
+  metadata_t *curMeta = startOfHeap;
+  void *endOfHeap = sbrk(0);
+  printf("-- Start of Heap (%p) --\n", startOfHeap);
+  while ((void *)curMeta < endOfHeap) {   // While we're before the end of the heap...
+    printf("metadata for memory %p: (%p, size=%d, isUsed=%d)\n", (void *)curMeta + sizeof(metadata_t), curMeta, curMeta->size, curMeta->isUsed);
+    curMeta = (void *)curMeta + curMeta->size + sizeof(metadata_t);
+  }
+  printf("-- End of Heap (%p) --\n\n", endOfHeap);
+}
+
 
 /**
  * Allocate space for array in memory
@@ -37,7 +61,12 @@ typedef struct _metadata_t {
  */
 void *calloc(size_t num, size_t size) {
     // implement calloc:
-    return NULL;
+    void *ptr = malloc(num * size);
+    if (!ptr) {
+      return NULL;
+    }
+    memset(ptr, 0 , num*size);
+    return ptr;
 }
 
 
@@ -62,11 +91,53 @@ void *calloc(size_t num, size_t size) {
  *
  * @see http://www.cplusplus.com/reference/clibrary/cstdlib/malloc/
  */
-void *startOfHeap = NULL;
 
 void *malloc(size_t size) {
   // implement malloc
-  return NULL;
+  //print_heap(size);
+  
+  if (startOfHeap == NULL) {
+    startOfHeap = sbrk(0);
+    // sbrk(0) returns the current end of our heap, without increasing it.
+  }
+  metadata_t *curMeta = startOfHeap;
+  void *endOfHeap = sbrk(0);
+  while ((void *)curMeta < endOfHeap) {
+    if (curMeta->isUsed == 0 && curMeta->size == size) {
+      curMeta->isUsed = 1;
+      void* ptr = (void *)curMeta + sizeof(metadata_t);
+      return ptr;
+    } else if (curMeta->isUsed == 0 && curMeta->size > size) {
+      size_t oldsize = curMeta->size;
+      curMeta->isUsed = 1;
+      curMeta->size = size;
+      void* curptr = (void *)curMeta + sizeof(metadata_t);
+      metadata_t* nextMeta = (void *)curptr + size;
+      nextMeta->isUsed = 0;
+      nextMeta->size = oldsize - sizeof(metadata_t) - size;
+      return curptr;
+    } else {
+      //do nothing
+    }
+    curMeta = (void *)curMeta + curMeta->size + sizeof(metadata_t);
+  }
+
+  metadata_t *meta = sbrk( sizeof(metadata_t) );
+  if (!meta) {
+    return NULL;
+  }
+  meta->size = size;
+  meta->isUsed = 1;
+
+  // Allocate heap memory for the requested memory:
+  void *ptr = sbrk( size );
+
+  if (!ptr) {
+    return NULL;
+  }
+
+  // Return the pointer for the requested memory:
+  return ptr;
 }
 
 
@@ -88,6 +159,29 @@ void *malloc(size_t size) {
  */
 void free(void *ptr) {
   // implement free
+  metadata_t *meta = ptr - sizeof( metadata_t );
+  meta->isUsed = 0;
+
+  //traverse
+  if (startOfHeap == NULL) {
+    startOfHeap = sbrk(0);
+    // sbrk(0) returns the current end of our heap, without increasing it.
+  }
+  // Print out data about each metadata chunk:
+  metadata_t *curMeta = startOfHeap;
+  void *endOfHeap = sbrk(0);
+  metadata_t* nextMeta = (void *)curMeta + curMeta->size + sizeof(metadata_t);
+  while ((void *)nextMeta < endOfHeap) {   // While we're before the end of the heap...
+    if (curMeta->isUsed == 0 && nextMeta->isUsed == 0) {
+      size_t totalsize = curMeta->size + nextMeta->size + 2 * sizeof(metadata_t);
+      curMeta->size = curMeta->size + nextMeta->size + sizeof(metadata_t);
+      nextMeta = (void *)curMeta + totalsize;
+    } else {
+      metadata_t* temp = nextMeta;
+      nextMeta = (void *)nextMeta + nextMeta->size + sizeof(metadata_t);
+      curMeta = temp;
+    }
+  }
 }
 
 
@@ -137,6 +231,28 @@ void free(void *ptr) {
  * @see http://www.cplusplus.com/reference/clibrary/cstdlib/realloc/
  */
 void *realloc(void *ptr, size_t size) {
-    // implement realloc:
+  if (ptr == NULL) {
+    ptr = malloc(size);
+    if (!ptr) {
+      return NULL;
+    }
+    return ptr;
+  }
+  if (size == 0) {
+    free(ptr);
     return NULL;
+  }
+  metadata_t* meta = ptr - sizeof(metadata_t);
+  if (size <= meta->size) {
+    meta->size = size;
+    return ptr;
+  } else {
+    void* newptr = malloc(size);
+    if (!newptr) {
+      return NULL;
+    }
+    memcpy(newptr, ptr, meta->size);
+    free(ptr);
+    return newptr;
+  }
 }

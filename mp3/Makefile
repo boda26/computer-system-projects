@@ -87,4 +87,4 @@ tests/test.o: tests/test.cpp
 
 .PHONY : clean
 clean:
-	-rm -rf *.o alloc.so mreplace mstats mstats-libc testers_exe tests/testers_exe/ lib/*.so tests/samples_exe/ tests/test.o test mstats_result.txt tests/lib/*.so
+	-rm -rf *.o *.dSYM lib/*.dSYM alloc.so mreplace mstats mstats-libc testers_exe tests/testers_exe/ lib/*.so tests/samples_exe/ tests/test.o test mstats_result.txt tests/lib/*.so

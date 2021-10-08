@@ -9,17 +9,15 @@ jobs:
         path: mp3/
         test_suite: autograding
   extra_credit:
-    name: extra_credit
-    needs:
-    - autograding
+    name: week2
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
     - uses: wadefagen/autograding@v1
       with:
         path: mp3/
-        test_suite: extra_credit
-name: Github Action Autograding
+        test_suite: week2
+name: MP3 Autograding
 'on':
   push:
     paths: mp3/*

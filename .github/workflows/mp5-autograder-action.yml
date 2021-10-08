@@ -1,0 +1,14 @@
+jobs:
+  autograding:
+    name: autograding
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: wadefagen/autograding@v1
+      with:
+        path: mp5/
+        test_suite: autograding
+name: mp5 autograding
+'on':
+  push:
+    paths: mp5/**
