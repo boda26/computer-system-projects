@@ -206,19 +206,5 @@ const char *httprequest_get_path(HTTPRequest *req) {
  * Destroys a `req`, freeing all associated memory.
  */
 void httprequest_destroy(HTTPRequest *req) {
-  free(req->action);
-  free(req->path);
-  free(req->version);
-  for (int i = 0; req->buffer_array[i] != NULL; i++) {
-    free(req->buffer_array[i]);
-  }
-  Pair* cur = req->head;
-  Pair* next;
-  while (cur != NULL) {
-    next = cur->next;
-    free(cur->key);
-    free(cur->value);
-    free(cur);
-    cur = next;
-  }
+  
 }
