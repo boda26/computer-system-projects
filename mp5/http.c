@@ -19,15 +19,15 @@
 ssize_t httprequest_parse_headers(HTTPRequest *req, char *buffer, ssize_t buffer_len) {
   printf("%d\n", 111);
   ssize_t ret = 0;
-  req->action = malloc(sizeof(char));
-  req->path = malloc(sizeof(char));
-  req->version = malloc(sizeof(char));
+  req->action = malloc(20);
+  req->path = malloc(20);
+  req->version = malloc(20);
 
   char* split_line;
   char* saveptr1, saveptr2;
   char* copy1 = malloc(buffer_len + 1);
   char* copy2;
-  memcpy(copy1, buffer, buffer_len + 1);
+  strcpy(copy1, buffer);
 
   char* delim1 = "\r\n";
   char* delim2 = ": ";
@@ -37,7 +37,7 @@ ssize_t httprequest_parse_headers(HTTPRequest *req, char *buffer, ssize_t buffer
   while (split_line != NULL) {
     ret += strlen(split_line);
     req->buffer_array[count_lines] = malloc(strlen(split_line) + 1);
-    memcpy(req->buffer_array[count_lines], split_line, strlen(split_line) + 1);
+    strcpy(req->buffer_array[count_lines], split_line);
     split_line = strtok_r(NULL, delim1, &saveptr1);
     count_lines++;
     ret += strlen(delim1);
@@ -48,18 +48,18 @@ ssize_t httprequest_parse_headers(HTTPRequest *req, char *buffer, ssize_t buffer
   //parse the header
   char* saveptr3;
   char* header = malloc(strlen(req->buffer_array[0]) + 1);
-  memcpy(header, req->buffer_array[0], strlen(req->buffer_array[0]) + 1);
+  memcpy(header, req->buffer_array[0], strlen(req->buffer_array[0]));
   //printf("%s\n", header);
   char* split_header = strtok_r(header, " ", &saveptr3);
   int headcount = 0;
   while (split_header != NULL) {
     //printf("%s\n", split_header);
     if (headcount == 0) {
-      memcpy(req->action, split_header, strlen(split_header) + 1);
+      strcpy(req->action, split_header);
     } else if (headcount == 1) {
-      memcpy(req->path, split_header, strlen(split_header) + 1);
+      strcpy(req->path, split_header);
     } else if (headcount == 2) {
-      memcpy(req->version, split_header, strlen(split_header) + 1);
+      strcpy(req->version, split_header);
     }
     split_header = strtok_r(NULL, " ", &saveptr3);
     headcount++;
@@ -77,7 +77,7 @@ ssize_t httprequest_parse_headers(HTTPRequest *req, char *buffer, ssize_t buffer
     if (strstr(req->buffer_array[j], delim2)) {   //find a line with delim
       //printf("%s\n", req->buffer_array[j]);
       char* temp1 = malloc(strlen(req->buffer_array[j]) + 1);
-      memcpy(temp1, req->buffer_array[j], strlen(req->buffer_array[j]) + 1);
+      strcpy(temp1, req->buffer_array[j]);
       split_colonsp = strtok_r(temp1, delim2, &saveptr2);
       keyOrValue = 0;
 
@@ -92,7 +92,7 @@ ssize_t httprequest_parse_headers(HTTPRequest *req, char *buffer, ssize_t buffer
           //printf("%s\n", req->keys[index]);
 
           cur->key = malloc(strlen(split_colonsp) + 1);
-          memcpy(cur->key, split_colonsp, strlen(split_colonsp) + 1);
+          strcpy(cur->key, split_colonsp);
           //printf("%s\n", cur->key);
 
         } else if (keyOrValue == 1) {
@@ -101,7 +101,7 @@ ssize_t httprequest_parse_headers(HTTPRequest *req, char *buffer, ssize_t buffer
           //printf("%s\n", req->values[index]);
 
           cur->value = malloc(strlen(split_colonsp) + 1);
-          memcpy(cur->value, split_colonsp, strlen(split_colonsp) + 1);
+          strcpy(cur->value, split_colonsp);
           break;
           //printf("%s\n", cur->value);
         }
@@ -141,7 +141,7 @@ ssize_t httprequest_read(HTTPRequest *req, int sockfd) {
   char* buffer = malloc(sz + 1);
   read(sockfd, buffer, sz);
   //printf("%s\n", buffer);
-  char* bf = malloc(sz + 1);
+  char* bf = malloc(sz);
   memcpy(bf, buffer, sz);
   httprequest_parse_headers(req, bf, sz);
   //printf("%d\n", a);
