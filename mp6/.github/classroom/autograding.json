@@ -1,0 +1,34 @@
+{
+  "tests": [
+    {
+      "name": "test_no_hidden_gif",
+      "setup": "",
+      "run": "pytest test_flask.py -k test_no_hidden_gif",
+      "input": "",
+      "output": "",
+      "comparison": "included",
+      "timeout": 5,
+      "points": 1
+    },
+    {
+      "name": "test_hidden_gif_waf",
+      "setup": "",
+      "run": "pytest test_flask.py -k test_hidden_gif_waf",
+      "input": "",
+      "output": "",
+      "comparison": "included",
+      "timeout": 5,
+      "points": 1
+    },
+    {
+      "name": "test_hidden_gif_natalia",
+      "setup": "",
+      "run": "pytest test_flask.py -k test_hidden_gif_natalia",
+      "input": "",
+      "output": "",
+      "comparison": "included",
+      "timeout": 5,
+      "points": 1
+    }
+  ]
+}

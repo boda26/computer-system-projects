@@ -1,0 +1,37 @@
+jobs:
+  autograding:
+    name: autograding
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.9
+    - run:
+        pip install -r mp6/requirements.txt
+    - uses: wadefagen/autograding@v1
+      with:
+        path: mp6/
+        test_suite: autograding
+  extra_credit:
+    name: extra_credit
+    needs:
+    - autograding
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.9
+    - run:
+        pip install -r mp6/requirements.txt
+    - uses: wadefagen/autograding@v1
+      with:
+        path: mp6/
+        test_suite: extra_credit        
+name: mp6 autograding
+'on':
+  push:
+    paths: mp6/**
