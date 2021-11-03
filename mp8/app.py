@@ -80,8 +80,6 @@ def POST_weather():
       coursetime_hour += 12
   coursetime_min = int(coursetime_split_colon[1])
 
-
- 
   nextclass_num = timeslot_list[0]
   
   for num in timeslot_list:
