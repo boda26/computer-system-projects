@@ -1,8 +1,4 @@
 # MapReduce class design from: https://pymotw.com/2/multiprocessing/mapreduce.html
-# - Modified for native Python dict usage
-# - Modified for glob file input
-# - Modified for flattening maps
-# - Modified for printing output
 
 import multiprocessing
 import glob
@@ -20,11 +16,11 @@ class MapReduce(object):
         # Pool of processes to parallelize computation
         self.proccess_pool = multiprocessing.Pool(NUM_WORKERS)
 
-    def kv_sort(self, mapped_values : list[dict]) -> dict:
+    def kv_sort(self, mapped_values) -> dict:
         # https://stackoverflow.com/questions/613183/how-do-i-sort-a-dictionary-by-value
         return {k: v for k, v in sorted(mapped_values.items(), key=lambda item: item[1], reverse=True)}
 
-    def reduce(self, map_phase : list[dict]) -> dict:
+    def reduce(self, map_phase) -> dict:
         d = map_phase
 
         while len(d) > 1:
@@ -42,7 +38,7 @@ class MapReduce(object):
             
         return d[0]
 
-    def __call__(self, data_in : list[str]) -> dict:
+    def __call__(self, data_in) -> dict:
         # Error checking:
         if len(data_in) == 0:
             raise Exception("No data provided.")
