@@ -1,2 +1,2 @@
 # computer_systems_projects
-Some projects about computer systems, written in C and Python.
+C and Python Projects from CS240-Intro to Computer Systems, Fall 2021.
